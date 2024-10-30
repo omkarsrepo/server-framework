@@ -94,8 +94,12 @@ func (props *serverService) shutdownGracefully(server *http.Server) {
 
 func (props *serverService) initializeServer(routes func(), middlewares []gin.HandlerFunc, database func()) {
 	props.setMaxMemoryLimit()
+
 	middlewareService := NewMiddlewareService()
 	middlewareService.RegisterMiddlewares(middlewares...)
+
+	customValidators := NewCustomValidatorsService()
+	customValidators.RegisterCustomValidators()
 
 	if routes != nil {
 		routes()
