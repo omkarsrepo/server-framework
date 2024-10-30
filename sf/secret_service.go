@@ -1,12 +1,12 @@
-package server_framework
+package sf
 
 import (
 	"fmt"
 	"github.com/go-resty/resty/v2"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/maypok86/otter"
-	"github.com/server-framework/server_framework/boom"
-	"github.com/server-framework/server_framework/json"
+	"github.com/omkarsrepo/server-framework/sf/boom"
+	"github.com/omkarsrepo/server-framework/sf/json"
 	"os"
 	"sync"
 	"time"

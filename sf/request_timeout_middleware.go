@@ -1,9 +1,9 @@
-package server_framework
+package sf
 
 import (
 	"errors"
 	"github.com/gin-gonic/gin"
-	"github.com/server-framework/server_framework/boom"
+	"github.com/omkarsrepo/server-framework/sf/boom"
 	"golang.org/x/net/context"
 	"net/http"
 	"time"

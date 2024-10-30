@@ -1,4 +1,4 @@
-package server_framework
+package sf
 
 import (
 	"fmt"
