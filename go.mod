@@ -1,4 +1,4 @@
-module github.com/server-framework
+module github.com/omkarsrepo/server-framework
 
 go 1.22.5
 
