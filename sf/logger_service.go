@@ -1,6 +1,7 @@
 package sf
 
 import (
+	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
 	"os"
 	"sync"
@@ -14,11 +15,11 @@ var (
 
 type LoggerService interface {
 	GetZeroLogger() *zerolog.Logger
-	Info() *zerolog.Event
-	Error() *zerolog.Event
-	Err(err error) *zerolog.Event
-	Fatal() *zerolog.Event
-	Panic() *zerolog.Event
+	Info(ginCtx *gin.Context) *zerolog.Event
+	Error(ginCtx *gin.Context) *zerolog.Event
+	Err(ginCtx *gin.Context, err error) *zerolog.Event
+	Fatal(ginCtx *gin.Context) *zerolog.Event
+	Panic(ginCtx *gin.Context) *zerolog.Event
 }
 
 type loggerService struct {
@@ -46,24 +47,39 @@ func LoggerServiceInstance() LoggerService {
 	return loggerServiceInstance
 }
 
-func (props *loggerService) Info() *zerolog.Event {
-	return props.Logger.Info()
+func (props *loggerService) Info(ginCtx *gin.Context) *zerolog.Event {
+	traceId := ginCtx.GetString("TRACE_ID")
+	logger := props.Logger.With().Str("traceId", traceId).Logger()
+
+	return logger.Info()
 }
 
-func (props *loggerService) Error() *zerolog.Event {
-	return props.Logger.Error()
+func (props *loggerService) Error(ginCtx *gin.Context) *zerolog.Event {
+	traceId := ginCtx.GetString("TRACE_ID")
+	logger := props.Logger.With().Str("traceId", traceId).Logger()
+
+	return logger.Error()
 }
 
-func (props *loggerService) Err(err error) *zerolog.Event {
-	return props.Logger.Err(err)
+func (props *loggerService) Err(ginCtx *gin.Context, err error) *zerolog.Event {
+	traceId := ginCtx.GetString("TRACE_ID")
+	logger := props.Logger.With().Str("traceId", traceId).Logger()
+
+	return logger.Err(err)
 }
 
-func (props *loggerService) Fatal() *zerolog.Event {
-	return props.Logger.Fatal()
+func (props *loggerService) Fatal(ginCtx *gin.Context) *zerolog.Event {
+	traceId := ginCtx.GetString("TRACE_ID")
+	logger := props.Logger.With().Str("traceId", traceId).Logger()
+
+	return logger.Fatal()
 }
 
-func (props *loggerService) Panic() *zerolog.Event {
-	return props.Logger.Panic()
+func (props *loggerService) Panic(ginCtx *gin.Context) *zerolog.Event {
+	traceId := ginCtx.GetString("TRACE_ID")
+	logger := props.Logger.With().Str("traceId", traceId).Logger()
+
+	return logger.Panic()
 }
 
 func (props *loggerService) GetZeroLogger() *zerolog.Logger {

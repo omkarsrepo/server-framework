@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/gin-gonic/gin"
+	"github.com/rs/zerolog"
 	"github.com/spf13/cobra"
 	_ "go.uber.org/automaxprocs"
 	"net/http"
@@ -21,7 +22,7 @@ type ServerService interface {
 
 type serverService struct {
 	cmd     *cobra.Command
-	logger  LoggerService
+	logger  *zerolog.Logger
 	config  ConfigService
 	router  *gin.Engine
 	cleanup func()
@@ -37,10 +38,11 @@ func NewServerService(name, description string) ServerService {
 	commandsService.RegisterCommands()
 
 	routerInstance := RouterInstance()
+	loggerInstance := LoggerServiceInstance()
 
 	return &serverService{
 		cmd:    cobraCmd,
-		logger: LoggerServiceInstance(),
+		logger: loggerInstance.GetZeroLogger(),
 		config: ConfigServiceInstance(),
 		router: routerInstance.GetRouter(),
 	}
