@@ -2,12 +2,12 @@ package sf
 
 import (
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"github.com/go-resty/resty/v2"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/maypok86/otter"
 	"github.com/omkarsrepo/server-framework/sf/boom"
 	"github.com/omkarsrepo/server-framework/sf/json"
+	"github.com/rs/zerolog"
 	"os"
 	"sync"
 	"time"
@@ -17,7 +17,7 @@ var singletonSecretService *secretService
 var once sync.Once
 
 type SecretService interface {
-	ValueOf(ginCtx *gin.Context, secretKey string) (string, *boom.Error)
+	ValueOf(secretKey string) (string, *boom.Error)
 }
 
 type secretService struct {
@@ -25,7 +25,7 @@ type secretService struct {
 	secretCache      *otter.CacheWithVariableTTL[string, any]
 	restyClient      *resty.Client
 	config           ConfigService
-	logger           LoggerService
+	logger           *zerolog.Logger
 }
 
 func SecretServiceInstance() SecretService {
@@ -38,19 +38,21 @@ func SecretServiceInstance() SecretService {
 		secretTokenCache := cache.New(2, time.Minute*59)
 		secretCache := cache.NewVariable(50)
 
+		loggerInstance := LoggerServiceInstance()
+
 		singletonSecretService = &secretService{
 			secretTokenCache: &secretTokenCache,
 			secretCache:      &secretCache,
 			restyClient:      restyClient,
 			config:           ConfigServiceInstance(),
-			logger:           LoggerServiceInstance(),
+			logger:           loggerInstance.GetZeroLogger(),
 		}
 	})
 
 	return singletonSecretService
 }
 
-func (props *secretService) fetchSecretToken(ginCtx *gin.Context) (string, *boom.Error) {
+func (props *secretService) fetchSecretToken() (string, *boom.Error) {
 	expectedBody := map[string]string{
 		"grant_type":    "client_credentials",
 		"client_id":     props.config.GetString("clientIds.hashicorp"),
@@ -65,13 +67,13 @@ func (props *secretService) fetchSecretToken(ginCtx *gin.Context) (string, *boom
 		Post("https://auth.idp.hashicorp.com/oauth2/token")
 
 	if err != nil || resp.StatusCode() >= 300 {
-		props.logger.Error(ginCtx).Err(err).Msg("Failed to fetch secret token")
+		props.logger.Error().Err(err).Msg("Failed to fetch secret token")
 		return "", boom.InternalServerError()
 	}
 
 	val, err := json.GetObjectValue(&responseResult, "access_token")
 	if err != nil {
-		props.logger.Error(ginCtx).Err(err).Msgf("Failed to destructure value access_token for result: %+v", responseResult)
+		props.logger.Error().Err(err).Msgf("Failed to destructure value access_token for result: %+v", responseResult)
 		return "", boom.InternalServerError()
 	}
 
@@ -80,10 +82,10 @@ func (props *secretService) fetchSecretToken(ginCtx *gin.Context) (string, *boom
 
 var secretTokenCacheKey = "FetchSecretToken"
 
-func (props *secretService) getSecretToken(ginCtx *gin.Context) (string, *boom.Error) {
+func (props *secretService) getSecretToken() (string, *boom.Error) {
 	secretToken, ok := props.secretTokenCache.Get(secretTokenCacheKey)
 	if !ok {
-		secretToken, exp := props.fetchSecretToken(ginCtx)
+		secretToken, exp := props.fetchSecretToken()
 		if exp != nil {
 			props.secretTokenCache.Clear()
 			return "", exp
@@ -96,12 +98,12 @@ func (props *secretService) getSecretToken(ginCtx *gin.Context) (string, *boom.E
 	return secretToken.(string), nil
 }
 
-func (props *secretService) fetchSecret(ginCtx *gin.Context, secretName string) (string, *boom.Error) {
+func (props *secretService) fetchSecret(secretName string) (string, *boom.Error) {
 	organizationId := props.config.GetString("hashicorp.organizationId")
 	projectId := props.config.GetString("hashicorp.projectId")
 	env := props.config.GetString("env")
 
-	secretToken, exp := props.getSecretToken(ginCtx)
+	secretToken, exp := props.getSecretToken()
 	if exp != nil {
 		return "", exp
 	}
@@ -116,13 +118,13 @@ func (props *secretService) fetchSecret(ginCtx *gin.Context, secretName string) 
 		Get(fmt.Sprintf("%s/%s/projects/%s/apps/%s/open/%s", baseUrl, organizationId, projectId, env, secretName))
 
 	if err != nil || resp.StatusCode() != 200 {
-		props.logger.Error(ginCtx).Err(err).Msgf("Failed to fetch secret value for key %s", secretName)
+		props.logger.Error().Err(err).Msgf("Failed to fetch secret value for key %s", secretName)
 		return "", boom.InternalServerError()
 	}
 
 	val, err := json.GetObjectValue(&responseResult, "secret.version.value")
 	if err != nil {
-		props.logger.Error(ginCtx).Err(err).
+		props.logger.Error().Err(err).
 			Msgf("Failed to destructure value 'secret.version.value' for result: %+v", responseResult)
 		return "", boom.InternalServerError()
 	}
@@ -130,12 +132,12 @@ func (props *secretService) fetchSecret(ginCtx *gin.Context, secretName string) 
 	return val.(string), nil
 }
 
-func (props *secretService) ValueOf(ginCtx *gin.Context, secretKey string) (string, *boom.Error) {
+func (props *secretService) ValueOf(secretKey string) (string, *boom.Error) {
 	secretName := props.config.GetString(secretKey)
 
 	secret, ok := props.secretCache.Get(secretName)
 	if !ok {
-		secret, exp := props.fetchSecret(ginCtx, secretName)
+		secret, exp := props.fetchSecret(secretName)
 		if exp != nil {
 			return "", exp
 		}
