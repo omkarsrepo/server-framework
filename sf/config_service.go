@@ -10,9 +10,9 @@ var (
 	configServiceInstance *configService
 	configServiceOnce     sync.Once
 	configFiles           = map[string]string{
-		"default": "../properties/default.json",
-		"sandbox": "../properties/sandbox.json",
-		"prod":    "./properties/prod.json",
+		"default": "../config/default.json",
+		"sandbox": "../config/sandbox.json",
+		"prod":    "../config/prod.json",
 	}
 	configFileType = "json"
 )
