@@ -22,5 +22,6 @@ func NewMiddlewareService() MiddlewareService {
 func (props *middlewareService) RegisterMiddlewares(middlewares ...gin.HandlerFunc) {
 	props.router.Use(ApplyRateLimiter())
 	props.router.Use(ApplyRequestTimeout())
+	props.router.Use(ApplyTraceHeader())
 	props.router.Use(middlewares...)
 }

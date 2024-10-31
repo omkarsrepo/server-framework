@@ -10,9 +10,12 @@ import (
 )
 
 type Error struct {
-	StatusCode int
-	Message    string
-	Body       gin.H
+	StatusCode       int         `json:"statusCode,omitempty"`
+	Exception        string      `json:"error,omitempty"`
+	Message          string      `json:"message,omitempty"`
+	ValidationErrors interface{} `json:"validationErrors,omitempty"`
+	TraceId          string      `json:"traceId,omitempty"`
+	Timestamp        time.Time   `json:"timestamp,omitempty"`
 }
 
 func (props *Error) Error() string {
@@ -24,14 +27,13 @@ func (props *Error) IsEmpty() bool {
 }
 
 func New(statusCode int, message string) *Error {
-	body := gin.H{
-		"error":      http.StatusText(statusCode),
-		"statusCode": statusCode,
-		"message":    message,
-		"timestamp":  time.Now(),
+	return &Error{
+		StatusCode:       statusCode,
+		Exception:        http.StatusText(statusCode),
+		Message:          message,
+		Timestamp:        time.Now(),
+		ValidationErrors: nil,
 	}
-
-	return &Error{statusCode, message, body}
 }
 
 func InternalServerError() *Error {
@@ -39,7 +41,8 @@ func InternalServerError() *Error {
 }
 
 func AbortWithError(ctx *gin.Context, err *Error) {
-	ctx.AbortWithStatusJSON(err.StatusCode, err.Body)
+	err.TraceId = ctx.GetString("TRACE_ID")
+	ctx.AbortWithStatusJSON(err.StatusCode, err)
 }
 
 func getValidationErrors(err error) (interface{}, bool) {
@@ -60,25 +63,14 @@ func getValidationErrors(err error) (interface{}, bool) {
 
 func AbortWithValidationErrors(ginCtx *gin.Context, err error, message string) {
 	statusCode := http.StatusBadRequest
+	traceId := ginCtx.GetString("TRACE_ID")
+
+	exp := New(statusCode, message)
+	exp.TraceId = traceId
 
 	if validationErrors, ok := getValidationErrors(err); ok {
-		body := gin.H{
-			"error":            http.StatusText(statusCode),
-			"statusCode":       statusCode,
-			"message":          message,
-			"validationErrors": validationErrors,
-			"timestamp":        time.Now(),
-		}
-
-		ginCtx.AbortWithStatusJSON(statusCode, &body)
-	} else {
-		body := gin.H{
-			"error":      http.StatusText(statusCode),
-			"statusCode": statusCode,
-			"message":    message,
-			"timestamp":  time.Now(),
-		}
-
-		ginCtx.AbortWithStatusJSON(statusCode, &body)
+		exp.ValidationErrors = validationErrors
 	}
+
+	ginCtx.AbortWithStatusJSON(statusCode, exp)
 }
