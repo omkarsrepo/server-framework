@@ -17,6 +17,8 @@ import (
 
 type ServerService interface {
 	RegisterShutdownHook(cleanup func())
+	OverrideCorsWithMiddleware(override bool)
+	RegisterMiddlewares(middlewares []gin.HandlerFunc)
 	Run(routes func(), database func())
 }
 
@@ -36,8 +38,8 @@ func NewServerService(name, description string) ServerService {
 		Short: description,
 	}
 
-	commandsService := NewCommandsService(cobraCmd)
-	commandsService.RegisterCommands()
+	commandsService := newCommandsService(cobraCmd)
+	commandsService.registerCommands()
 
 	routerInstance := RouterInstance()
 	loggerInstance := LoggerServiceInstance()
@@ -100,11 +102,11 @@ func (s *serverService) shutdownGracefully(server *http.Server) {
 func (s *serverService) initializeServer(routes func(), database func()) {
 	s.setMaxMemoryLimit()
 
-	middlewareService := NewMiddlewareService()
-	middlewareService.RegisterMiddlewares(s.shouldOverrideCors, s.middlewares...)
+	middlewareService := newMiddlewareService()
+	middlewareService.registerMiddlewares(s.shouldOverrideCors, s.middlewares...)
 
-	customValidators := NewCustomValidatorsService()
-	customValidators.RegisterCustomValidators()
+	customValidators := newCustomValidatorsService()
+	customValidators.registerCustomValidators()
 
 	if routes != nil {
 		routes()

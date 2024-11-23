@@ -7,14 +7,14 @@ import (
 )
 
 type CommandsService interface {
-	RegisterCommands()
+	registerCommands()
 }
 
 type commandsService struct {
 	cmd *cobra.Command
 }
 
-func NewCommandsService(command *cobra.Command) CommandsService {
+func newCommandsService(command *cobra.Command) CommandsService {
 	return &commandsService{
 		cmd: command,
 	}
@@ -55,7 +55,7 @@ func (c *commandsService) bindToConfig() {
 	viper.AutomaticEnv()
 }
 
-func (c *commandsService) RegisterCommands() {
+func (c *commandsService) registerCommands() {
 	c.register()
 	c.bindToConfig()
 }

@@ -7,12 +7,12 @@ import (
 )
 
 type CustomValidatorsService interface {
-	RegisterCustomValidators()
+	registerCustomValidators()
 }
 
 type customValidatorsService struct{}
 
-func NewCustomValidatorsService() CustomValidatorsService {
+func newCustomValidatorsService() CustomValidatorsService {
 	return &customValidatorsService{}
 }
 
@@ -25,7 +25,7 @@ func (*customValidatorsService) notBlank(field validator.FieldLevel) bool {
 	return len(trimmedValue) > 0
 }
 
-func (c *customValidatorsService) RegisterCustomValidators() {
+func (c *customValidatorsService) registerCustomValidators() {
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
 		err := v.RegisterValidation("notBlank", c.notBlank)
 		if err != nil {

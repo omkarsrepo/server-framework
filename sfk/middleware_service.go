@@ -6,14 +6,14 @@ import (
 )
 
 type MiddlewareService interface {
-	RegisterMiddlewares(overrideCorsMiddleware bool, middlewares ...gin.HandlerFunc)
+	registerMiddlewares(overrideCorsMiddleware bool, middlewares ...gin.HandlerFunc)
 }
 
 type middlewareService struct {
 	router *gin.Engine
 }
 
-func NewMiddlewareService() MiddlewareService {
+func newMiddlewareService() MiddlewareService {
 	routerInstance := RouterInstance()
 	return &middlewareService{
 		router: routerInstance.GetRouter(),
@@ -27,7 +27,7 @@ func applyCors() gin.HandlerFunc {
 	return cors.New(corsConfig)
 }
 
-func (m *middlewareService) RegisterMiddlewares(overrideCorsMiddleware bool, middlewares ...gin.HandlerFunc) {
+func (m *middlewareService) registerMiddlewares(overrideCorsMiddleware bool, middlewares ...gin.HandlerFunc) {
 	m.router.Use(applyRateLimiter())
 	m.router.Use(applyRequestTimeout())
 	m.router.Use(applyTraceHeader())
