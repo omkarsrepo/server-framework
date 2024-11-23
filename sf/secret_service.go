@@ -17,7 +17,7 @@ var singletonSecretService *secretService
 var once sync.Once
 
 type SecretService interface {
-	ValueOf(secretKey string) (string, *boom.Error)
+	ValueOf(secretKey string) (string, *boom.Exception)
 }
 
 type secretService struct {
@@ -52,7 +52,7 @@ func SecretServiceInstance() SecretService {
 	return singletonSecretService
 }
 
-func (props *secretService) fetchSecretToken() (string, *boom.Error) {
+func (props *secretService) fetchSecretToken() (string, *boom.Exception) {
 	expectedBody := map[string]string{
 		"grant_type":    "client_credentials",
 		"client_id":     props.config.GetString("clientIds.hashicorp"),
@@ -82,7 +82,7 @@ func (props *secretService) fetchSecretToken() (string, *boom.Error) {
 
 var secretTokenCacheKey = "FetchSecretToken"
 
-func (props *secretService) getSecretToken() (string, *boom.Error) {
+func (props *secretService) getSecretToken() (string, *boom.Exception) {
 	secretToken, ok := props.secretTokenCache.Get(secretTokenCacheKey)
 	if !ok {
 		secretToken, exp := props.fetchSecretToken()
@@ -98,7 +98,7 @@ func (props *secretService) getSecretToken() (string, *boom.Error) {
 	return secretToken.(string), nil
 }
 
-func (props *secretService) fetchSecret(secretName string) (string, *boom.Error) {
+func (props *secretService) fetchSecret(secretName string) (string, *boom.Exception) {
 	organizationId := props.config.GetString("hashicorp.organizationId")
 	projectId := props.config.GetString("hashicorp.projectId")
 	env := props.config.GetString("env")
@@ -132,7 +132,7 @@ func (props *secretService) fetchSecret(secretName string) (string, *boom.Error)
 	return val.(string), nil
 }
 
-func (props *secretService) ValueOf(secretKey string) (string, *boom.Error) {
+func (props *secretService) ValueOf(secretKey string) (string, *boom.Exception) {
 	secretName := props.config.GetString(secretKey)
 
 	secret, ok := props.secretCache.Get(secretName)

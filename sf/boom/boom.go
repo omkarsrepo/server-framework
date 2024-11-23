@@ -9,68 +9,92 @@ import (
 	"time"
 )
 
-type Error struct {
-	StatusCode       int         `json:"statusCode,omitempty"`
-	Exception        string      `json:"error,omitempty"`
-	Message          string      `json:"message,omitempty"`
-	ValidationErrors interface{} `json:"validationErrors,omitempty"`
-	TraceId          string      `json:"traceId,omitempty"`
-	Timestamp        time.Time   `json:"timestamp,omitempty"`
+type Exception struct {
+	StatusCode      int       `json:"statusCode,omitempty"`
+	ErrorText       string    `json:"error,omitempty"`
+	Message         string    `json:"message,omitempty"`
+	ValidationError string    `json:"validationError,omitempty"`
+	TraceId         string    `json:"traceId,omitempty"`
+	Timestamp       time.Time `json:"timestamp,omitempty"`
 }
 
-func (props *Error) Error() string {
+func Boom(statusCode int, message string) *Exception {
+	return &Exception{
+		StatusCode: statusCode,
+		ErrorText:  http.StatusText(statusCode),
+		Message:    message,
+		Timestamp:  time.Now(),
+	}
+}
+
+func (props *Exception) Error() string {
 	return props.Message
 }
 
-func (props *Error) IsEmpty() bool {
+func (props *Exception) IsEmpty() bool {
 	return props.Message == "" || props.StatusCode == 0
 }
 
-func New(statusCode int, message string) *Error {
-	return &Error{
-		StatusCode:       statusCode,
-		Exception:        http.StatusText(statusCode),
-		Message:          message,
-		Timestamp:        time.Now(),
-		ValidationErrors: nil,
-	}
+func InternalServerError() *Exception {
+	return Boom(http.StatusInternalServerError, "Something went wrong. Please retry in sometime or contact support team")
 }
 
-func InternalServerError() *Error {
-	return New(http.StatusInternalServerError, "Something went wrong. Please retry in sometime or contact support team")
+func PreconditionFailed(message string) *Exception {
+	return Boom(http.StatusPreconditionFailed, message)
 }
 
-func AbortWithError(ctx *gin.Context, err *Error) {
-	err.TraceId = ctx.GetString("TRACE_ID")
-	ctx.AbortWithStatusJSON(err.StatusCode, err)
+func NotFound(message string) *Exception {
+	return Boom(http.StatusNotFound, message)
 }
 
-func getValidationErrors(err error) (interface{}, bool) {
-	var errorsStr []string
+func Forbidden(message string) *Exception {
+	return Boom(http.StatusForbidden, message)
+}
+
+func Unauthorized(message string) *Exception {
+	return Boom(http.StatusUnauthorized, message)
+}
+
+func MethodNotAllowed(message string) *Exception {
+	return Boom(http.StatusMethodNotAllowed, message)
+}
+
+func BadRequest(message string) *Exception {
+	return Boom(http.StatusBadRequest, message)
+}
+
+func Abort(ginCtx *gin.Context, err *Exception) {
+	err.TraceId = ginCtx.GetString("TRACE_ID")
+	ginCtx.AbortWithStatusJSON(err.StatusCode, err)
+}
+
+func getValidationError(err error) string {
 	var validationErrors validator.ValidationErrors
-	var nilObj interface{}
 
 	if errors.As(err, &validationErrors) {
-		for _, fieldError := range err.(validator.ValidationErrors) {
-			errorsStr = append(errorsStr, fmt.Sprintf("Field '%s' failed validation with tag '%s'", fieldError.Field(), fieldError.Tag()))
-		}
+		fieldError := err.(validator.ValidationErrors)[0]
+		errorsStr := fmt.Sprintf("Field '%s' failed validation with constraint of '%s'", fieldError.Field(), fieldError.Tag())
 
-		return errorsStr, true
+		return errorsStr
 	}
 
-	return nilObj, false
+	return ""
 }
 
-func AbortWithValidationErrors(ginCtx *gin.Context, err error, message string) {
+func AbortForValidationWithMsg(ginCtx *gin.Context, err error, message string) {
 	statusCode := http.StatusBadRequest
 	traceId := ginCtx.GetString("TRACE_ID")
 
-	exp := New(statusCode, message)
+	exp := BadRequest(message)
 	exp.TraceId = traceId
 
-	if validationErrors, ok := getValidationErrors(err); ok {
-		exp.ValidationErrors = validationErrors
+	if validationError := getValidationError(err); validationError != "" {
+		exp.ValidationError = validationError
 	}
 
 	ginCtx.AbortWithStatusJSON(statusCode, exp)
+}
+
+func AbortForValidation(ginCtx *gin.Context, err error) {
+	AbortForValidationWithMsg(ginCtx, err, "Request body validation failed")
 }

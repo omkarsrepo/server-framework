@@ -19,8 +19,8 @@ func ApplyRequestTimeout() gin.HandlerFunc {
 		ginCtx.Next()
 
 		if ctx.Err() != nil && errors.Is(ctx.Err(), context.DeadlineExceeded) {
-			exp := boom.New(http.StatusGatewayTimeout, "Request took too long. Please retry after sometime or contact support!")
-			boom.AbortWithError(ginCtx, exp)
+			exp := boom.Boom(http.StatusGatewayTimeout, "Request took too long. Please retry after sometime or contact support!")
+			boom.Abort(ginCtx, exp)
 		}
 	}
 }
