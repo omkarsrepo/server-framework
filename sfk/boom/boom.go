@@ -27,12 +27,12 @@ func Boom(statusCode int, message string) *Exception {
 	}
 }
 
-func (props *Exception) Error() string {
-	return props.Message
+func (e *Exception) Error() string {
+	return e.Message
 }
 
-func (props *Exception) IsEmpty() bool {
-	return props.Message == "" || props.StatusCode == 0
+func (e *Exception) IsEmpty() bool {
+	return e.Message == "" || e.StatusCode == 0
 }
 
 func InternalServerError() *Exception {

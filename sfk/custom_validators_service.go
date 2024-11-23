@@ -1,4 +1,4 @@
-package sf
+package sfk
 
 import (
 	"github.com/gin-gonic/gin/binding"
@@ -25,9 +25,9 @@ func (*customValidatorsService) notBlank(field validator.FieldLevel) bool {
 	return len(trimmedValue) > 0
 }
 
-func (props *customValidatorsService) RegisterCustomValidators() {
+func (c *customValidatorsService) RegisterCustomValidators() {
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
-		err := v.RegisterValidation("notBlank", props.notBlank)
+		err := v.RegisterValidation("notBlank", c.notBlank)
 		if err != nil {
 			panic(err)
 		}

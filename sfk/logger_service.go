@@ -1,4 +1,4 @@
-package sf
+package sfk
 
 import (
 	"github.com/gin-gonic/gin"
@@ -60,61 +60,61 @@ func extractTraceId(ginCtx *gin.Context) (string, bool) {
 	return traceId, false
 }
 
-func (props *loggerService) Info(ginCtx *gin.Context) *zerolog.Event {
+func (l *loggerService) Info(ginCtx *gin.Context) *zerolog.Event {
 	traceId, ok := extractTraceId(ginCtx)
 	if ok {
-		logger := props.Logger.With().Str("traceId", traceId).Logger()
+		logger := l.Logger.With().Str("traceId", traceId).Logger()
 
 		return logger.Info()
 	}
 
-	return props.Logger.Info()
+	return l.Logger.Info()
 }
 
-func (props *loggerService) Error(ginCtx *gin.Context) *zerolog.Event {
+func (l *loggerService) Error(ginCtx *gin.Context) *zerolog.Event {
 	traceId, ok := extractTraceId(ginCtx)
 	if ok {
-		logger := props.Logger.With().Str("traceId", traceId).Logger()
+		logger := l.Logger.With().Str("traceId", traceId).Logger()
 
 		return logger.Error()
 	}
 
-	return props.Logger.Error()
+	return l.Logger.Error()
 }
 
-func (props *loggerService) Err(ginCtx *gin.Context, err error) *zerolog.Event {
+func (l *loggerService) Err(ginCtx *gin.Context, err error) *zerolog.Event {
 	traceId, ok := extractTraceId(ginCtx)
 	if ok {
-		logger := props.Logger.With().Str("traceId", traceId).Logger()
+		logger := l.Logger.With().Str("traceId", traceId).Logger()
 
 		return logger.Err(err)
 	}
 
-	return props.Logger.Err(err)
+	return l.Logger.Err(err)
 }
 
-func (props *loggerService) Fatal(ginCtx *gin.Context) *zerolog.Event {
+func (l *loggerService) Fatal(ginCtx *gin.Context) *zerolog.Event {
 	traceId, ok := extractTraceId(ginCtx)
 	if ok {
-		logger := props.Logger.With().Str("traceId", traceId).Logger()
+		logger := l.Logger.With().Str("traceId", traceId).Logger()
 
 		return logger.Fatal()
 	}
 
-	return props.Logger.Fatal()
+	return l.Logger.Fatal()
 }
 
-func (props *loggerService) Panic(ginCtx *gin.Context) *zerolog.Event {
+func (l *loggerService) Panic(ginCtx *gin.Context) *zerolog.Event {
 	traceId, ok := extractTraceId(ginCtx)
 	if ok {
-		logger := props.Logger.With().Str("traceId", traceId).Logger()
+		logger := l.Logger.With().Str("traceId", traceId).Logger()
 
 		return logger.Panic()
 	}
 
-	return props.Logger.Panic()
+	return l.Logger.Panic()
 }
 
-func (props *loggerService) GetZeroLogger() *zerolog.Logger {
-	return props.Logger
+func (l *loggerService) GetZeroLogger() *zerolog.Logger {
+	return l.Logger
 }

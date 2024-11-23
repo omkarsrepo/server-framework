@@ -1,4 +1,4 @@
-package sf
+package sfk
 
 import (
 	"github.com/gin-gonic/gin"
@@ -19,9 +19,9 @@ func NewMiddlewareService() MiddlewareService {
 	}
 }
 
-func (props *middlewareService) RegisterMiddlewares(middlewares ...gin.HandlerFunc) {
-	props.router.Use(ApplyRateLimiter())
-	props.router.Use(ApplyRequestTimeout())
-	props.router.Use(ApplyTraceHeader())
-	props.router.Use(middlewares...)
+func (m *middlewareService) RegisterMiddlewares(middlewares ...gin.HandlerFunc) {
+	m.router.Use(ApplyRateLimiter())
+	m.router.Use(ApplyRequestTimeout())
+	m.router.Use(ApplyTraceHeader())
+	m.router.Use(middlewares...)
 }

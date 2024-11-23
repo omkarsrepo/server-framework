@@ -1,9 +1,9 @@
-package sf
+package sfk
 
 import (
 	"errors"
 	"github.com/gin-gonic/gin"
-	"github.com/omkarsrepo/server-framework/sf/boom"
+	"github.com/omkarsrepo/server-framework/sfk/boom"
 	"golang.org/x/net/context"
 	"net/http"
 	"time"

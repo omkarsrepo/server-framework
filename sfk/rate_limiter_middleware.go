@@ -1,4 +1,4 @@
-package sf
+package sfk
 
 import (
 	"github.com/gin-gonic/gin"
@@ -9,9 +9,9 @@ type RateLimiterMiddleware struct {
 	limiter ratelimit.Limiter
 }
 
-func (props *RateLimiterMiddleware) applyFilter() gin.HandlerFunc {
+func (rl *RateLimiterMiddleware) applyFilter() gin.HandlerFunc {
 	return func(ginCtx *gin.Context) {
-		props.limiter.Take()
+		rl.limiter.Take()
 
 		ginCtx.Next()
 	}

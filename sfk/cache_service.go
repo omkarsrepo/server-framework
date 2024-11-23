@@ -1,4 +1,4 @@
-package sf
+package sfk
 
 import (
 	"github.com/maypok86/otter"
@@ -33,21 +33,21 @@ func Cache() CacheService {
 	return cacheServiceInstance
 }
 
-func (props *cacheService) registerCache(cache *otter.Cache[string, any]) {
+func (c *cacheService) registerCache(cache *otter.Cache[string, any]) {
 	cacheMapsMtx.Lock()
 	defer cacheMapsMtx.Unlock()
 
-	props.cacheMaps = append(props.cacheMaps, cache)
+	c.cacheMaps = append(c.cacheMaps, cache)
 }
 
-func (props *cacheService) registerVariableCache(cache *otter.CacheWithVariableTTL[string, any]) {
+func (c *cacheService) registerVariableCache(cache *otter.CacheWithVariableTTL[string, any]) {
 	variableCacheMapsMtx.Lock()
 	defer variableCacheMapsMtx.Unlock()
 
-	props.variableCacheMaps = append(props.variableCacheMaps, cache)
+	c.variableCacheMaps = append(c.variableCacheMaps, cache)
 }
 
-func (props *cacheService) New(capacity int, ttl time.Duration) otter.Cache[string, any] {
+func (c *cacheService) New(capacity int, ttl time.Duration) otter.Cache[string, any] {
 	cache, err := otter.MustBuilder[string, any](capacity).
 		WithTTL(ttl).
 		Build()
@@ -56,35 +56,35 @@ func (props *cacheService) New(capacity int, ttl time.Duration) otter.Cache[stri
 		panic(err)
 	}
 
-	props.registerCache(&cache)
+	c.registerCache(&cache)
 
 	return cache
 }
 
-func (props *cacheService) NewVariable(capacity int) otter.CacheWithVariableTTL[string, any] {
+func (c *cacheService) NewVariable(capacity int) otter.CacheWithVariableTTL[string, any] {
 	cache, err := otter.MustBuilder[string, any](capacity).
 		WithVariableTTL().Build()
 	if err != nil {
 		panic(err)
 	}
 
-	props.registerVariableCache(&cache)
+	c.registerVariableCache(&cache)
 
 	return cache
 }
 
-func (props *cacheService) Close() {
+func (c *cacheService) Close() {
 	cacheMapsMtx.Lock()
 	defer cacheMapsMtx.Unlock()
 
-	lo.ForEach(props.cacheMaps, func(cache *otter.Cache[string, any], _ int) {
+	lo.ForEach(c.cacheMaps, func(cache *otter.Cache[string, any], _ int) {
 		cache.Close()
 	})
 
 	variableCacheMapsMtx.Lock()
 	defer variableCacheMapsMtx.Unlock()
 
-	lo.ForEach(props.variableCacheMaps, func(cache *otter.CacheWithVariableTTL[string, any], _ int) {
+	lo.ForEach(c.variableCacheMaps, func(cache *otter.CacheWithVariableTTL[string, any], _ int) {
 		cache.Close()
 	})
 }

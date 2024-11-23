@@ -1,4 +1,4 @@
-package sf
+package sfk
 
 import (
 	"github.com/gin-gonic/gin"

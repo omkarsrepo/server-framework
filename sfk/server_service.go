@@ -1,4 +1,4 @@
-package sf
+package sfk
 
 import (
 	"context"
@@ -48,25 +48,25 @@ func NewServerService(name, description string) ServerService {
 	}
 }
 
-func (props *serverService) cleanupOnShutdown() {
+func (s *serverService) cleanupOnShutdown() {
 	go func() {
 		Cache().Close()
 
-		if props.cleanup != nil {
-			props.cleanup()
+		if s.cleanup != nil {
+			s.cleanup()
 		}
 	}()
 }
 
-func (props *serverService) setMaxMemoryLimit() {
-	if props.config.GetString("env") != "localhost" {
-		maxMemoryLimit := props.config.GetInt64("maxMemoryLimitInMB")
+func (s *serverService) setMaxMemoryLimit() {
+	if s.config.GetString("env") != "localhost" {
+		maxMemoryLimit := s.config.GetInt64("maxMemoryLimitInMB")
 
 		debug.SetMemoryLimit(maxMemoryLimit * 1 << 20)
 	}
 }
 
-func (props *serverService) shutdownGracefully(server *http.Server) {
+func (s *serverService) shutdownGracefully(server *http.Server) {
 	quit := make(chan os.Signal, 1)
 	defer close(quit)
 
@@ -74,28 +74,28 @@ func (props *serverService) shutdownGracefully(server *http.Server) {
 
 	<-quit
 
-	props.logger.Info().Msg("Received shutdown server event...")
+	s.logger.Info().Msg("Received shutdown server event...")
 
-	gracefulShutdownSecs := props.config.GetInt("gracefulShutdownSecs")
+	gracefulShutdownSecs := s.config.GetInt("gracefulShutdownSecs")
 	gracefulShutdown := time.Duration(gracefulShutdownSecs) * time.Second
 
-	props.logger.Info().Msgf("Server Shutdown timeout of %s seconds...", gracefulShutdown)
+	s.logger.Info().Msgf("Server Shutdown timeout of %s seconds...", gracefulShutdown)
 
 	ctx, cancel := context.WithTimeout(context.Background(), gracefulShutdown)
 	defer cancel()
 
-	props.cleanupOnShutdown()
+	s.cleanupOnShutdown()
 
 	if err := server.Shutdown(ctx); err != nil {
-		props.logger.Fatal().Msgf("Server failed to gracefully shutdown before timeout: %+v", err)
+		s.logger.Fatal().Msgf("Server failed to gracefully shutdown before timeout: %+v", err)
 	}
 
 	<-ctx.Done()
-	props.logger.Info().Msgf("Server Shutdown timeout of %s seconds completed successfully. Server Exited!", gracefulShutdown)
+	s.logger.Info().Msgf("Server Shutdown timeout of %s seconds completed successfully. Server Exited!", gracefulShutdown)
 }
 
-func (props *serverService) initializeServer(routes func(), middlewares []gin.HandlerFunc, database func()) {
-	props.setMaxMemoryLimit()
+func (s *serverService) initializeServer(routes func(), middlewares []gin.HandlerFunc, database func()) {
+	s.setMaxMemoryLimit()
 
 	middlewareService := NewMiddlewareService()
 	middlewareService.RegisterMiddlewares(middlewares...)
@@ -112,35 +112,35 @@ func (props *serverService) initializeServer(routes func(), middlewares []gin.Ha
 	}
 }
 
-func (props *serverService) startServer() {
-	port := props.config.GetString("port")
+func (s *serverService) startServer() {
+	port := s.config.GetString("port")
 	server := &http.Server{
 		Addr:    ":" + port,
-		Handler: props.router.Handler(),
+		Handler: s.router.Handler(),
 	}
 
 	go func() {
-		props.logger.Info().Msgf("Server running successfully on port %s", port)
+		s.logger.Info().Msgf("Server running successfully on port %s", port)
 
 		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			props.logger.Fatal().Msgf("Failed to start server... listen: %+v\n", err)
+			s.logger.Fatal().Msgf("Failed to start server... listen: %+v\n", err)
 		}
 	}()
 
-	props.shutdownGracefully(server)
+	s.shutdownGracefully(server)
 }
 
-func (props *serverService) RegisterShutdownHook(cleanup func()) {
-	props.cleanup = cleanup
+func (s *serverService) RegisterShutdownHook(cleanup func()) {
+	s.cleanup = cleanup
 }
 
-func (props *serverService) Run(routes func(), middlewares []gin.HandlerFunc, database func()) {
-	props.cmd.Run = func(_ *cobra.Command, args []string) {
-		props.initializeServer(routes, middlewares, database)
-		props.startServer()
+func (s *serverService) Run(routes func(), middlewares []gin.HandlerFunc, database func()) {
+	s.cmd.Run = func(_ *cobra.Command, args []string) {
+		s.initializeServer(routes, middlewares, database)
+		s.startServer()
 	}
 
-	if err := props.cmd.Execute(); err != nil {
+	if err := s.cmd.Execute(); err != nil {
 		panic(err)
 	}
 }

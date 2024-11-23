@@ -1,4 +1,4 @@
-package sf
+package sfk
 
 import (
 	"github.com/gin-gonic/gin"
@@ -41,6 +41,6 @@ func RouterInstance() RouterService {
 	return routerServiceInstance
 }
 
-func (props *routerService) GetRouter() *gin.Engine {
-	return props.Engine
+func (r *routerService) GetRouter() *gin.Engine {
+	return r.Engine
 }

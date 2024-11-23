@@ -1,4 +1,4 @@
-package sf
+package sfk
 
 import (
 	"fmt"
@@ -81,22 +81,22 @@ func ConfigServiceInstance() ConfigService {
 	return configServiceInstance
 }
 
-func (props *configService) GetString(key string) string {
-	return props.viper.GetString(key)
+func (c *configService) GetString(key string) string {
+	return c.viper.GetString(key)
 }
 
-func (props *configService) GetInt(key string) int {
-	return props.viper.GetInt(key)
+func (c *configService) GetInt(key string) int {
+	return c.viper.GetInt(key)
 }
 
-func (props *configService) GetInt64(key string) int64 {
-	return props.viper.GetInt64(key)
+func (c *configService) GetInt64(key string) int64 {
+	return c.viper.GetInt64(key)
 }
 
-func (props *configService) GetBool(key string) bool {
-	return props.viper.GetBool(key)
+func (c *configService) GetBool(key string) bool {
+	return c.viper.GetBool(key)
 }
 
-func (props *configService) GetViper() *viper.Viper {
-	return props.viper
+func (c *configService) GetViper() *viper.Viper {
+	return c.viper
 }

@@ -2,7 +2,7 @@ package json
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/omkarsrepo/server-framework/sf/boom"
+	"github.com/omkarsrepo/server-framework/sfk/boom"
 	"strings"
 )
 
