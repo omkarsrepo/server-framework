@@ -22,7 +22,7 @@ func getRouter() *gin.Engine {
 	config := ConfigServiceInstance()
 	router := gin.Default()
 
-	if config.GetString("env") == "localhost" {
+	if config.GetString("env") != "prod" {
 		gin.SetMode(gin.DebugMode)
 	} else {
 		gin.SetMode(gin.ReleaseMode)
