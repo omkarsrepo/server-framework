@@ -9,14 +9,15 @@
 6. Custom Json Validators and Validators Exception
 7. Json Utils
 8. Secret Service
-9. Database Initializaiton
+9. Database Initialization
 10. In Memory Cache Service
 11. Logger Service
 12. Commands
-13. Ratelimiter Middleware
+13. Rate Limiter Middleware
 14. Request Timeout Middleware
-15. Auto GoMaxProcs Configuration
-16. Go Memory Limit Configuration
-17. Graceful Shutdown
-18. TraceId support for Logger and Errors
-19. Default Cors Configuration with override support
+15. Request Logger Middleware 
+16. TraceId support for Logger and Errors 
+17. Auto Go Max Processes Configuration 
+18. Go Memory Limit Configuration 
+19. Graceful Shutdown
+20. Default Cors Configuration with override support
