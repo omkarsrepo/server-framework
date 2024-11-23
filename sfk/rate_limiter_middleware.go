@@ -5,11 +5,11 @@ import (
 	"go.uber.org/ratelimit"
 )
 
-type RateLimiterMiddleware struct {
+type rateLimiterMiddleware struct {
 	limiter ratelimit.Limiter
 }
 
-func (rl *RateLimiterMiddleware) applyFilter() gin.HandlerFunc {
+func (rl *rateLimiterMiddleware) applyFilter() gin.HandlerFunc {
 	return func(ginCtx *gin.Context) {
 		rl.limiter.Take()
 
@@ -17,10 +17,10 @@ func (rl *RateLimiterMiddleware) applyFilter() gin.HandlerFunc {
 	}
 }
 
-func ApplyRateLimiter() gin.HandlerFunc {
+func applyRateLimiter() gin.HandlerFunc {
 	config := ConfigServiceInstance()
 	limiter := ratelimit.New(config.GetInt("rateLimitCallsPerSec"))
-	instance := &RateLimiterMiddleware{limiter}
+	instance := &rateLimiterMiddleware{limiter}
 
 	return instance.applyFilter()
 }

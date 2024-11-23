@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-func ApplyTraceHeader() gin.HandlerFunc {
+func applyTraceHeader() gin.HandlerFunc {
 	return func(ginCtx *gin.Context) {
 		ginCtx.Set("TRACE_ID", "")
 

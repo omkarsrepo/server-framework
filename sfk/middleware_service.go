@@ -28,9 +28,10 @@ func applyCors() gin.HandlerFunc {
 }
 
 func (m *middlewareService) RegisterMiddlewares(overrideCorsMiddleware bool, middlewares ...gin.HandlerFunc) {
-	m.router.Use(ApplyRateLimiter())
-	m.router.Use(ApplyRequestTimeout())
-	m.router.Use(ApplyTraceHeader())
+	m.router.Use(applyRateLimiter())
+	m.router.Use(applyRequestTimeout())
+	m.router.Use(applyTraceHeader())
+	m.router.Use(applyRequestLoggerMiddleware())
 
 	if !overrideCorsMiddleware {
 		m.router.Use(applyCors())

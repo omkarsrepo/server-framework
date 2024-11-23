@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-func ApplyRequestTimeout() gin.HandlerFunc {
+func applyRequestTimeout() gin.HandlerFunc {
 	return func(ginCtx *gin.Context) {
 		ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 		defer cancel()
