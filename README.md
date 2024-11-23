@@ -19,3 +19,4 @@
 16. Go Memory Limit Configuration
 17. Graceful Shutdown
 18. TraceId support for Logger and Errors
+19. Default Cors Configuration with override support

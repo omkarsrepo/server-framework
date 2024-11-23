@@ -21,11 +21,12 @@ type ServerService interface {
 }
 
 type serverService struct {
-	cmd     *cobra.Command
-	logger  *zerolog.Logger
-	config  ConfigService
-	router  *gin.Engine
-	cleanup func()
+	cmd                *cobra.Command
+	logger             *zerolog.Logger
+	config             ConfigService
+	router             *gin.Engine
+	cleanup            func()
+	shouldOverrideCors bool
 }
 
 func NewServerService(name, description string) ServerService {
@@ -41,10 +42,11 @@ func NewServerService(name, description string) ServerService {
 	loggerInstance := LoggerServiceInstance()
 
 	return &serverService{
-		cmd:    cobraCmd,
-		logger: loggerInstance.GetZeroLogger(),
-		config: ConfigServiceInstance(),
-		router: routerInstance.GetRouter(),
+		cmd:                cobraCmd,
+		logger:             loggerInstance.GetZeroLogger(),
+		config:             ConfigServiceInstance(),
+		router:             routerInstance.GetRouter(),
+		shouldOverrideCors: false,
 	}
 }
 
@@ -98,7 +100,7 @@ func (s *serverService) initializeServer(routes func(), middlewares []gin.Handle
 	s.setMaxMemoryLimit()
 
 	middlewareService := NewMiddlewareService()
-	middlewareService.RegisterMiddlewares(middlewares...)
+	middlewareService.RegisterMiddlewares(s.shouldOverrideCors, middlewares...)
 
 	customValidators := NewCustomValidatorsService()
 	customValidators.RegisterCustomValidators()
@@ -132,6 +134,10 @@ func (s *serverService) startServer() {
 
 func (s *serverService) RegisterShutdownHook(cleanup func()) {
 	s.cleanup = cleanup
+}
+
+func (s *serverService) OverrideCorsWithMiddleware(override bool) {
+	s.shouldOverrideCors = override
 }
 
 func (s *serverService) Run(routes func(), middlewares []gin.HandlerFunc, database func()) {
