@@ -5,15 +5,15 @@ import (
 	"strings"
 )
 
-func GetObjectValue(data *map[string]interface{}, key string) (interface{}, error) {
-	parts := strings.Split(key, ".")
-	current := data
+func GetObjectValue(object *map[string]interface{}, keyInObject string) (interface{}, error) {
+	parts := strings.Split(keyInObject, ".")
+	current := object
 
 	for _, part := range parts[:len(parts)-1] {
 		if currentMap, ok := (*current)[part].(map[string]interface{}); ok {
 			current = &currentMap
 		} else {
-			return nil, fmt.Errorf("key %s not found or not a map", part)
+			return nil, fmt.Errorf("object key '%s' not found or object is invalid", part)
 		}
 	}
 
@@ -21,6 +21,6 @@ func GetObjectValue(data *map[string]interface{}, key string) (interface{}, erro
 	if value, ok := (*current)[finalKey]; ok {
 		return value, nil
 	} else {
-		return nil, fmt.Errorf("key %s not found", finalKey)
+		return nil, fmt.Errorf("object key '%s' not found", finalKey)
 	}
 }
