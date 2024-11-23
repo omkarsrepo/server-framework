@@ -17,7 +17,7 @@ import (
 
 type ServerService interface {
 	RegisterShutdownHook(cleanup func())
-	Run(routes func(), middlewares []gin.HandlerFunc, database func())
+	Run(routes func(), database func())
 }
 
 type serverService struct {
@@ -27,6 +27,7 @@ type serverService struct {
 	router             *gin.Engine
 	cleanup            func()
 	shouldOverrideCors bool
+	middlewares        []gin.HandlerFunc
 }
 
 func NewServerService(name, description string) ServerService {
@@ -96,11 +97,11 @@ func (s *serverService) shutdownGracefully(server *http.Server) {
 	s.logger.Info().Msgf("Server Shutdown timeout of %s seconds completed successfully. Server Exited!", gracefulShutdown)
 }
 
-func (s *serverService) initializeServer(routes func(), middlewares []gin.HandlerFunc, database func()) {
+func (s *serverService) initializeServer(routes func(), database func()) {
 	s.setMaxMemoryLimit()
 
 	middlewareService := NewMiddlewareService()
-	middlewareService.RegisterMiddlewares(s.shouldOverrideCors, middlewares...)
+	middlewareService.RegisterMiddlewares(s.shouldOverrideCors, s.middlewares...)
 
 	customValidators := NewCustomValidatorsService()
 	customValidators.RegisterCustomValidators()
@@ -140,9 +141,13 @@ func (s *serverService) OverrideCorsWithMiddleware(override bool) {
 	s.shouldOverrideCors = override
 }
 
-func (s *serverService) Run(routes func(), middlewares []gin.HandlerFunc, database func()) {
+func (s *serverService) RegisterMiddlewares(middlewares []gin.HandlerFunc) {
+	s.middlewares = middlewares
+}
+
+func (s *serverService) Run(routes func(), database func()) {
 	s.cmd.Run = func(_ *cobra.Command, args []string) {
-		s.initializeServer(routes, middlewares, database)
+		s.initializeServer(routes, database)
 		s.startServer()
 	}
 
