@@ -16,7 +16,7 @@ type middlewareService struct {
 func newMiddlewareService() MiddlewareService {
 	routerInstance := RouterInstance()
 	return &middlewareService{
-		router: routerInstance.GetRouter(),
+		router: routerInstance.Router(),
 	}
 }
 
