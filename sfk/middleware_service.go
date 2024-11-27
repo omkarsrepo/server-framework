@@ -22,6 +22,7 @@ func newMiddlewareService() MiddlewareService {
 
 func applyCors() gin.HandlerFunc {
 	corsConfig := cors.DefaultConfig()
+	corsConfig.AllowAllOrigins = true
 	corsConfig.AllowCredentials = true
 
 	return cors.New(corsConfig)
