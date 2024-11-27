@@ -17,7 +17,7 @@ var singletonSecretService *secretService
 var once sync.Once
 
 type SecretService interface {
-	ValueOf(secretKey string) (string, *boom.Exception)
+	ValueOf(secretKey string) (string, boom.Exception)
 }
 
 type secretService struct {
@@ -52,7 +52,7 @@ func SecretServiceInstance() SecretService {
 	return singletonSecretService
 }
 
-func (s *secretService) fetchSecretToken() (string, *boom.Exception) {
+func (s *secretService) fetchSecretToken() (string, boom.Exception) {
 	expectedBody := map[string]string{
 		"grant_type":    "client_credentials",
 		"client_id":     s.config.GetString("clientIds.hashicorp"),
@@ -82,7 +82,7 @@ func (s *secretService) fetchSecretToken() (string, *boom.Exception) {
 
 var secretTokenCacheKey = "FetchSecretToken"
 
-func (s *secretService) getSecretToken() (string, *boom.Exception) {
+func (s *secretService) getSecretToken() (string, boom.Exception) {
 	secretToken, ok := s.secretTokenCache.Get(secretTokenCacheKey)
 	if !ok {
 		secretToken, exp := s.fetchSecretToken()
@@ -98,7 +98,7 @@ func (s *secretService) getSecretToken() (string, *boom.Exception) {
 	return secretToken.(string), nil
 }
 
-func (s *secretService) fetchSecret(secretName string) (string, *boom.Exception) {
+func (s *secretService) fetchSecret(secretName string) (string, boom.Exception) {
 	organizationId := s.config.GetString("hashicorp.organizationId")
 	projectId := s.config.GetString("hashicorp.projectId")
 	env := s.config.GetString("env")
@@ -132,7 +132,7 @@ func (s *secretService) fetchSecret(secretName string) (string, *boom.Exception)
 	return val, nil
 }
 
-func (s *secretService) ValueOf(secretKey string) (string, *boom.Exception) {
+func (s *secretService) ValueOf(secretKey string) (string, boom.Exception) {
 	secretName := s.config.GetString(secretKey)
 
 	secret, ok := s.secretCache.Get(secretName)

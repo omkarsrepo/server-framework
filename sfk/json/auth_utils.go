@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-func ExtractAuthorization(ginCtx *gin.Context) (string, *boom.Exception) {
+func ExtractAuthorization(ginCtx *gin.Context) (string, boom.Exception) {
 	authHeader := ginCtx.GetHeader("Authorization")
 	if len(authHeader) == 0 || !strings.Contains(authHeader, "Bearer ") {
 		return "", boom.Unauthorized("Authorization header is invalid or empty")
