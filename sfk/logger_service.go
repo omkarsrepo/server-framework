@@ -14,7 +14,7 @@ var (
 )
 
 type LoggerService interface {
-	GetZeroLogger() *zerolog.Logger
+	ZeroLogger() *zerolog.Logger
 	Info(ginCtx *gin.Context) *zerolog.Event
 	Error(ginCtx *gin.Context) *zerolog.Event
 	Err(ginCtx *gin.Context, err error) *zerolog.Event
@@ -115,6 +115,6 @@ func (l *loggerService) Panic(ginCtx *gin.Context) *zerolog.Event {
 	return l.Logger.Panic()
 }
 
-func (l *loggerService) GetZeroLogger() *zerolog.Logger {
+func (l *loggerService) ZeroLogger() *zerolog.Logger {
 	return l.Logger
 }

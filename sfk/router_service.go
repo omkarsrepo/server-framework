@@ -11,7 +11,7 @@ var (
 )
 
 type RouterService interface {
-	GetRouter() *gin.Engine
+	Router() *gin.Engine
 }
 
 type routerService struct {
@@ -41,6 +41,6 @@ func RouterInstance() RouterService {
 	return routerServiceInstance
 }
 
-func (r *routerService) GetRouter() *gin.Engine {
+func (r *routerService) Router() *gin.Engine {
 	return r.Engine
 }

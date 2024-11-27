@@ -45,7 +45,7 @@ func SecretServiceInstance() SecretService {
 			secretCache:      &secretCache,
 			restyClient:      restyClient,
 			config:           ConfigServiceInstance(),
-			logger:           loggerInstance.GetZeroLogger(),
+			logger:           loggerInstance.ZeroLogger(),
 		}
 	})
 
@@ -71,13 +71,13 @@ func (s *secretService) fetchSecretToken() (string, *boom.Exception) {
 		return "", boom.InternalServerError()
 	}
 
-	val, err := json.GetObjectValue(&responseResult, "access_token")
+	val, err := json.ValueOf[string](&responseResult, "access_token")
 	if err != nil {
 		s.logger.Error().Err(err).Msgf("Failed to destructure value access_token for result: %+v", responseResult)
 		return "", boom.InternalServerError()
 	}
 
-	return val.(string), nil
+	return val, nil
 }
 
 var secretTokenCacheKey = "FetchSecretToken"
@@ -122,14 +122,14 @@ func (s *secretService) fetchSecret(secretName string) (string, *boom.Exception)
 		return "", boom.InternalServerError()
 	}
 
-	val, err := json.GetObjectValue(&responseResult, "secret.version.value")
+	val, err := json.ValueOf[string](&responseResult, "secret.version.value")
 	if err != nil {
 		s.logger.Error().Err(err).
 			Msgf("Failed to destructure value 'secret.version.value' for result: %+v", responseResult)
 		return "", boom.InternalServerError()
 	}
 
-	return val.(string), nil
+	return val, nil
 }
 
 func (s *secretService) ValueOf(secretKey string) (string, *boom.Exception) {

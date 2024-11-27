@@ -19,7 +19,7 @@ type ServerService interface {
 	RegisterShutdownHook(cleanup func())
 	OverrideCorsWithMiddleware(override bool)
 	RegisterMiddlewares(middlewares []gin.HandlerFunc)
-	Run(routes func(), database func())
+	Start(routes func(), database func())
 }
 
 type serverService struct {
@@ -46,9 +46,9 @@ func NewServerService(name, description string) ServerService {
 
 	return &serverService{
 		cmd:                cobraCmd,
-		logger:             loggerInstance.GetZeroLogger(),
+		logger:             loggerInstance.ZeroLogger(),
 		config:             ConfigServiceInstance(),
-		router:             routerInstance.GetRouter(),
+		router:             routerInstance.Router(),
 		shouldOverrideCors: false,
 	}
 }
@@ -147,7 +147,7 @@ func (s *serverService) RegisterMiddlewares(middlewares []gin.HandlerFunc) {
 	s.middlewares = middlewares
 }
 
-func (s *serverService) Run(routes func(), database func()) {
+func (s *serverService) Start(routes func(), database func()) {
 	s.cmd.Run = func(_ *cobra.Command, args []string) {
 		s.initializeServer(routes, database)
 		s.startServer()

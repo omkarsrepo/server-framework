@@ -14,7 +14,7 @@ type requestLoggerMiddleware struct {
 }
 
 func purgeField(decodedBody *map[string]interface{}, fieldName string) {
-	if _, err := json.GetObjectValue(decodedBody, fieldName); err == nil {
+	if _, err := json.AnyValueOf[any](decodedBody, fieldName); err == nil {
 		delete(*decodedBody, fieldName)
 	}
 }
