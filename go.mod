@@ -1,5 +1,3 @@
-// Unpublished Work © 2024
-
 module github.com/omkarsrepo/server-framework
 
 go 1.22.5
