@@ -1,3 +1,5 @@
+// Unpublished Work © 2024
+
 package boom
 
 import (
