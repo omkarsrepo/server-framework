@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"github.com/gin-gonic/gin"
+	"github.com/omkarsrepo/server-framework/sfk/types"
 	"github.com/rs/zerolog"
 	"github.com/spf13/cobra"
 	_ "go.uber.org/automaxprocs"
@@ -18,23 +19,24 @@ import (
 )
 
 type ServerService interface {
-	RegisterShutdownHook(cleanup func())
-	OverrideCorsWithMiddleware(override bool)
-	RegisterMiddlewares(middlewares []gin.HandlerFunc)
-	Start(routes func(), database func())
+	Start()
 }
 
 type serverService struct {
-	cmd                *cobra.Command
-	logger             *zerolog.Logger
-	config             ConfigService
-	router             *gin.Engine
-	cleanup            func()
-	shouldOverrideCors bool
-	middlewares        []gin.HandlerFunc
+	cmd                            *cobra.Command
+	logger                         *zerolog.Logger
+	config                         ConfigService
+	router                         *gin.Engine
+	cleanup                        func()
+	shouldOverrideCors             bool
+	middlewares                    []gin.HandlerFunc
+	routes                         func()
+	database                       func()
+	disableGzipCompression         bool
+	excludePathsForGzipCompression []string
 }
 
-func NewServerService(name, description string) ServerService {
+func NewServerService(name, description string, options *types.ServerOptions) ServerService {
 	cobraCmd := &cobra.Command{
 		Use:   name,
 		Short: description,
@@ -47,11 +49,17 @@ func NewServerService(name, description string) ServerService {
 	loggerInstance := LoggerServiceInstance()
 
 	return &serverService{
-		cmd:                cobraCmd,
-		logger:             loggerInstance.ZeroLogger(),
-		config:             ConfigServiceInstance(),
-		router:             routerInstance.Router(),
-		shouldOverrideCors: false,
+		cmd:                            cobraCmd,
+		logger:                         loggerInstance.ZeroLogger(),
+		config:                         ConfigServiceInstance(),
+		router:                         routerInstance.Router(),
+		shouldOverrideCors:             options.ShouldOverrideCORSMiddleware,
+		middlewares:                    options.Middlewares,
+		cleanup:                        options.ShutdownHook,
+		routes:                         options.Routes,
+		database:                       options.Database,
+		disableGzipCompression:         options.ShouldDisableGzipCompression,
+		excludePathsForGzipCompression: options.ExcludePathsForGzipCompression,
 	}
 }
 
@@ -104,8 +112,13 @@ func (s *serverService) shutdownGracefully(server *http.Server) {
 func (s *serverService) initializeServer(routes func(), database func()) {
 	s.setMaxMemoryLimit()
 
-	middlewareService := newMiddlewareService()
-	middlewareService.registerMiddlewares(s.shouldOverrideCors, s.middlewares...)
+	middlewareService := newMiddlewareService(&middlewareOptions{
+		overrideCorsMiddleware:         s.shouldOverrideCors,
+		disableGzipCompression:         s.disableGzipCompression,
+		excludePathsForGzipCompression: s.excludePathsForGzipCompression,
+	})
+
+	middlewareService.registerMiddlewares(s.middlewares...)
 
 	customValidators := newCustomValidatorsService()
 	customValidators.registerCustomValidators()
@@ -137,21 +150,9 @@ func (s *serverService) startServer() {
 	s.shutdownGracefully(server)
 }
 
-func (s *serverService) RegisterShutdownHook(cleanup func()) {
-	s.cleanup = cleanup
-}
-
-func (s *serverService) OverrideCorsWithMiddleware(override bool) {
-	s.shouldOverrideCors = override
-}
-
-func (s *serverService) RegisterMiddlewares(middlewares []gin.HandlerFunc) {
-	s.middlewares = middlewares
-}
-
-func (s *serverService) Start(routes func(), database func()) {
+func (s *serverService) Start() {
 	s.cmd.Run = func(_ *cobra.Command, args []string) {
-		s.initializeServer(routes, database)
+		s.initializeServer(s.routes, s.database)
 		s.startServer()
 	}
 

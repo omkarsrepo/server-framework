@@ -3,7 +3,10 @@
 package sfk
 
 import (
+	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
+	"github.com/omkarsrepo/server-framework/sfk/boom"
+	"github.com/omkarsrepo/server-framework/sfk/json"
 	"sync"
 )
 
@@ -20,6 +23,35 @@ type routerService struct {
 	*gin.Engine
 }
 
+func enablePprof(router *gin.Engine) *gin.Engine {
+	secretService := SecretServiceInstance()
+
+	pprofEndpoint := router.Group("/metrics", func(ginCtx *gin.Context) {
+		authToken, exp := json.ExtractAuthorization(ginCtx)
+		if exp != nil {
+			boom.Abort(ginCtx, exp)
+			return
+		}
+
+		val, exp := secretService.ValueOf("pprofSecret")
+		if exp != nil {
+			boom.Abort(ginCtx, exp)
+			return
+		}
+
+		if authToken != val {
+			boom.Abort(ginCtx, boom.Unauthorized("Invalid authToken for authorization header"))
+			return
+		}
+
+		ginCtx.Next()
+	})
+
+	pprof.RouteRegister(pprofEndpoint, "pprof")
+
+	return router
+}
+
 func getRouter() *gin.Engine {
 	config := ConfigServiceInstance()
 	router := gin.Default()
@@ -30,7 +62,7 @@ func getRouter() *gin.Engine {
 		gin.SetMode(gin.ReleaseMode)
 	}
 
-	return router
+	return enablePprof(router)
 }
 
 func RouterInstance() RouterService {

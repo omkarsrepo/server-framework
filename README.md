@@ -21,3 +21,10 @@
 18. Go Memory Limit Configuration 
 19. Graceful Shutdown
 20. Default Cors Configuration with override support
+21. Enabled PProf
+```
+curl -v -H "Authorization: foobar" -o profile.pb.gz \
+  http://localhost:8080/metrics/pprof/profile?seconds=60
+go tool pprof -http=:8099 profile.pb.gz
+```
+22. Enabled Gzip Compression with option to exclude paths.
