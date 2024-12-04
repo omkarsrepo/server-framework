@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/omkarsrepo/server-framework/sfk/boom"
 	"github.com/omkarsrepo/server-framework/sfk/json"
+	"net/http"
 	"sync"
 )
 
@@ -23,7 +24,7 @@ type routerService struct {
 	*gin.Engine
 }
 
-func enablePprof(router *gin.Engine) *gin.Engine {
+func enablePprof(router *gin.Engine) {
 	secretService := SecretServiceInstance()
 
 	pprofEndpoint := router.Group("/metrics", func(ginCtx *gin.Context) {
@@ -48,8 +49,12 @@ func enablePprof(router *gin.Engine) *gin.Engine {
 	})
 
 	pprof.RouteRegister(pprofEndpoint, "pprof")
+}
 
-	return router
+func registerHealthPingEndpoint(router *gin.Engine) {
+	router.GET("/health/IhEaf/ping", func(ginCtx *gin.Context) {
+		ginCtx.JSON(http.StatusNoContent, nil)
+	})
 }
 
 func getRouter() *gin.Engine {
@@ -62,7 +67,10 @@ func getRouter() *gin.Engine {
 		gin.SetMode(gin.ReleaseMode)
 	}
 
-	return enablePprof(router)
+	registerHealthPingEndpoint(router)
+	enablePprof(router)
+
+	return router
 }
 
 func RouterInstance() RouterService {
