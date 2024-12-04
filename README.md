@@ -28,3 +28,4 @@ curl -v -H "Authorization: foobar" -o profile.pb.gz \
 go tool pprof -http=:8099 profile.pb.gz
 ```
 22. Enabled Gzip Compression with option to exclude paths.
+23. Health Ping Endpoint: `/health/IhEaf/ping`
