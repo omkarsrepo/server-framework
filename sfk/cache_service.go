@@ -23,8 +23,8 @@ type CacheService interface {
 }
 
 type cacheService struct {
-	cacheMaps         []*otter.Cache[string, any]
-	variableCacheMaps []*otter.CacheWithVariableTTL[string, any]
+	cacheMaps         []otter.Cache[string, any]
+	variableCacheMaps []otter.CacheWithVariableTTL[string, any]
 }
 
 func Cache() CacheService {
@@ -35,14 +35,14 @@ func Cache() CacheService {
 	return cacheServiceInstance
 }
 
-func (c *cacheService) registerCache(cache *otter.Cache[string, any]) {
+func (c *cacheService) registerCache(cache otter.Cache[string, any]) {
 	cacheMapsMtx.Lock()
 	defer cacheMapsMtx.Unlock()
 
 	c.cacheMaps = append(c.cacheMaps, cache)
 }
 
-func (c *cacheService) registerVariableCache(cache *otter.CacheWithVariableTTL[string, any]) {
+func (c *cacheService) registerVariableCache(cache otter.CacheWithVariableTTL[string, any]) {
 	variableCacheMapsMtx.Lock()
 	defer variableCacheMapsMtx.Unlock()
 
@@ -58,7 +58,7 @@ func (c *cacheService) New(capacity int, ttl time.Duration) otter.Cache[string, 
 		panic(err)
 	}
 
-	c.registerCache(&cache)
+	c.registerCache(cache)
 
 	return cache
 }
@@ -70,7 +70,7 @@ func (c *cacheService) NewVariable(capacity int) otter.CacheWithVariableTTL[stri
 		panic(err)
 	}
 
-	c.registerVariableCache(&cache)
+	c.registerVariableCache(cache)
 
 	return cache
 }
@@ -79,14 +79,14 @@ func (c *cacheService) Close() {
 	cacheMapsMtx.Lock()
 	defer cacheMapsMtx.Unlock()
 
-	lo.ForEach(c.cacheMaps, func(cache *otter.Cache[string, any], _ int) {
+	lo.ForEach(c.cacheMaps, func(cache otter.Cache[string, any], _ int) {
 		cache.Close()
 	})
 
 	variableCacheMapsMtx.Lock()
 	defer variableCacheMapsMtx.Unlock()
 
-	lo.ForEach(c.variableCacheMaps, func(cache *otter.CacheWithVariableTTL[string, any], _ int) {
+	lo.ForEach(c.variableCacheMaps, func(cache otter.CacheWithVariableTTL[string, any], _ int) {
 		cache.Close()
 	})
 }

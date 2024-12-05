@@ -23,8 +23,8 @@ type SecretService interface {
 }
 
 type secretService struct {
-	secretTokenCache *otter.Cache[string, any]
-	secretCache      *otter.CacheWithVariableTTL[string, any]
+	secretTokenCache otter.Cache[string, any]
+	secretCache      otter.CacheWithVariableTTL[string, any]
 	restyClient      *resty.Client
 	config           ConfigService
 	logger           *zerolog.Logger
@@ -43,8 +43,8 @@ func SecretServiceInstance() SecretService {
 		loggerInstance := LoggerServiceInstance()
 
 		singletonSecretService = &secretService{
-			secretTokenCache: &secretTokenCache,
-			secretCache:      &secretCache,
+			secretTokenCache: secretTokenCache,
+			secretCache:      secretCache,
 			restyClient:      restyClient,
 			config:           ConfigServiceInstance(),
 			logger:           loggerInstance.ZeroLogger(),
@@ -73,7 +73,7 @@ func (s *secretService) fetchSecretToken() (string, boom.Exception) {
 		return "", boom.InternalServerError()
 	}
 
-	val, err := json.ValueOf[string](&responseResult, "access_token")
+	val, err := json.ValueOf[string](responseResult, "access_token")
 	if err != nil {
 		s.logger.Error().Err(err).Msgf("Failed to destructure value access_token for result: %+v", responseResult)
 		return "", boom.InternalServerError()
@@ -124,7 +124,7 @@ func (s *secretService) fetchSecret(secretName string) (string, boom.Exception) 
 		return "", boom.InternalServerError()
 	}
 
-	val, err := json.ValueOf[string](&responseResult, "secret.version.value")
+	val, err := json.ValueOf[string](responseResult, "secret.version.value")
 	if err != nil {
 		s.logger.Error().Err(err).
 			Msgf("Failed to destructure value 'secret.version.value' for result: %+v", responseResult)

@@ -15,9 +15,9 @@ type requestLoggerMiddleware struct {
 	logger LoggerService
 }
 
-func purgeField(decodedBody *map[string]interface{}, fieldName string) {
+func purgeField(decodedBody map[string]interface{}, fieldName string) {
 	if _, err := json.AnyValueOf[any](decodedBody, fieldName); err == nil {
-		delete(*decodedBody, fieldName)
+		delete(decodedBody, fieldName)
 	}
 }
 
@@ -30,9 +30,9 @@ func cleanRequestBody(body io.ReadCloser, ctx *gin.Context) map[string]interface
 		ctx.Request.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
 
 		if err == nil && jsoniter.Unmarshal(bodyBytes, &decodedBody) == nil {
-			purgeField(&decodedBody, "password")
-			purgeField(&decodedBody, "clientSecret")
-			purgeField(&decodedBody, "sessionToken")
+			purgeField(decodedBody, "password")
+			purgeField(decodedBody, "clientSecret")
+			purgeField(decodedBody, "sessionToken")
 		}
 	}
 
