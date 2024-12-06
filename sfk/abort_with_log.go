@@ -8,11 +8,9 @@ import (
 	"github.com/omkarsrepo/server-framework/sfk/boom"
 )
 
-var (
-	logger = LoggerServiceInstance()
-)
-
 func logError(ginCtx *gin.Context, err boom.Exception) {
+	logger := LoggerServiceInstance()
+
 	req := ginCtx.Request
 	cleanBody := cleanRequestBody(req.Body, ginCtx)
 	cleanHeaders := cleanRequestHeaders(req.Header.Clone())
