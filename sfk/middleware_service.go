@@ -16,6 +16,10 @@ type middlewareOptions struct {
 	overrideCorsMiddleware         bool
 	disableGzipCompression         bool
 	excludePathsForGzipCompression []string
+	skipRateLimiterMiddleware      bool
+	skipRequestTimeoutMiddleware   bool
+	skipTraceHeaderMiddleware      bool
+	skipRequestLoggerMiddleware    bool
 }
 
 type middlewareService struct {
@@ -40,10 +44,21 @@ func applyCors() gin.HandlerFunc {
 }
 
 func (m *middlewareService) registerMiddlewares(middlewares ...gin.HandlerFunc) {
-	m.router.Use(applyRateLimiter())
-	m.router.Use(applyRequestTimeout())
-	m.router.Use(applyTraceHeader())
-	m.router.Use(applyRequestLoggerMiddleware())
+	if !m.options.skipRateLimiterMiddleware {
+		m.router.Use(applyRateLimiter())
+	}
+
+	if !m.options.skipRequestTimeoutMiddleware {
+		m.router.Use(ApplyRequestTimeout())
+	}
+
+	if !m.options.skipTraceHeaderMiddleware {
+		m.router.Use(applyTraceHeader())
+	}
+
+	if !m.options.skipRequestLoggerMiddleware {
+		m.router.Use(applyRequestLoggerMiddleware())
+	}
 
 	if !m.options.overrideCorsMiddleware {
 		m.router.Use(applyCors())

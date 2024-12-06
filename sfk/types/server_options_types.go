@@ -12,4 +12,8 @@ type ServerOptions struct {
 	ShouldDisableGzipCompression   bool
 	ExcludePathsForGzipCompression []string
 	Middlewares                    []gin.HandlerFunc
+	SkipRateLimiterMiddleware      bool
+	SkipRequestTimeoutMiddleware   bool
+	SkipTraceHeaderMiddleware      bool
+	SkipRequestLoggerMiddleware    bool
 }

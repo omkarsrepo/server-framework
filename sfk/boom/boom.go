@@ -62,6 +62,10 @@ func (e *exception) responseObject() *exception {
 	return e
 }
 
+func (e *exception) Exception() Exception {
+	return Boom(e.ErrorStatusCode, e.Message)
+}
+
 func InternalServerError() Exception {
 	return Boom(http.StatusInternalServerError, "Something went wrong. Please retry in sometime or contact support team")
 }

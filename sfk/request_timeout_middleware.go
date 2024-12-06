@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-func applyRequestTimeout() gin.HandlerFunc {
+func ApplyRequestTimeout() gin.HandlerFunc {
 	return func(ginCtx *gin.Context) {
 		ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 		defer cancel()
@@ -22,7 +22,7 @@ func applyRequestTimeout() gin.HandlerFunc {
 
 		if ctx.Err() != nil && errors.Is(ctx.Err(), context.DeadlineExceeded) {
 			exp := boom.Boom(http.StatusGatewayTimeout, "Request took too long. Please retry after sometime or contact support!")
-			boom.Abort(ginCtx, exp)
+			Abort(ginCtx, exp)
 		}
 	}
 }

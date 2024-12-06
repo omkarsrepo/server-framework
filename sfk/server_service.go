@@ -34,6 +34,10 @@ type serverService struct {
 	database                       func()
 	disableGzipCompression         bool
 	excludePathsForGzipCompression []string
+	skipRateLimiterMiddleware      bool
+	skipRequestTimeoutMiddleware   bool
+	skipTraceHeaderMiddleware      bool
+	skipRequestLoggerMiddleware    bool
 }
 
 func NewServerService(name, description string, options *types.ServerOptions) ServerService {
@@ -60,6 +64,10 @@ func NewServerService(name, description string, options *types.ServerOptions) Se
 		database:                       options.Database,
 		disableGzipCompression:         options.ShouldDisableGzipCompression,
 		excludePathsForGzipCompression: options.ExcludePathsForGzipCompression,
+		skipRateLimiterMiddleware:      options.SkipRateLimiterMiddleware,
+		skipRequestTimeoutMiddleware:   options.SkipRequestTimeoutMiddleware,
+		skipTraceHeaderMiddleware:      options.SkipTraceHeaderMiddleware,
+		skipRequestLoggerMiddleware:    options.SkipRequestLoggerMiddleware,
 	}
 }
 

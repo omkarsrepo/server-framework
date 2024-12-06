@@ -30,18 +30,18 @@ func enablePprof(router *gin.Engine) {
 	pprofEndpoint := router.Group("/metrics", func(ginCtx *gin.Context) {
 		authToken, exp := json.ExtractAuthorization(ginCtx)
 		if exp != nil {
-			boom.Abort(ginCtx, exp)
+			Abort(ginCtx, exp)
 			return
 		}
 
 		val, exp := secretService.ValueOf("pprofSecret")
 		if exp != nil {
-			boom.Abort(ginCtx, exp)
+			Abort(ginCtx, exp)
 			return
 		}
 
 		if authToken != val {
-			boom.Abort(ginCtx, boom.Unauthorized("Invalid authToken for authorization header"))
+			Abort(ginCtx, boom.Unauthorized("Invalid authToken for authorization header"))
 			return
 		}
 
