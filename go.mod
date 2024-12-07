@@ -13,6 +13,7 @@ require (
 	github.com/maypok86/otter v1.2.4
 	github.com/rs/zerolog v1.33.0
 	github.com/samber/lo v1.47.0
+	github.com/sethvargo/go-password v0.3.1
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/viper v1.19.0
 	go.uber.org/automaxprocs v1.6.0
