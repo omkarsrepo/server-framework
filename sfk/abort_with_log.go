@@ -36,8 +36,8 @@ func Abort(ginCtx *gin.Context, err boom.Exception) {
 	boom.Abort(ginCtx, err)
 }
 
-func AbortForValidation(ginCtx *gin.Context, err boom.Exception, message ...string) {
-	logError(ginCtx, err)
+func AbortForValidation(ginCtx *gin.Context, err error, message ...string) {
+	logError(ginCtx, boom.BadRequest(err.Error()))
 
 	if len(message) != 0 {
 		boom.AbortForValidationWithMsg(ginCtx, err, message[0])
