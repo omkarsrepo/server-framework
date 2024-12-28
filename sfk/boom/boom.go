@@ -94,10 +94,14 @@ func BadRequest(message string) Exception {
 	return Boom(http.StatusBadRequest, message)
 }
 
-func Abort(ginCtx *gin.Context, err Exception) {
-	err.SetTraceId(ginCtx.GetString("TRACE_ID"))
+func Abort(ginCtx *gin.Context, err error) {
+	var exp Exception
+	if !errors.As(err, &exp) {
+		exp = InternalServerError()
+	}
 
-	ginCtx.AbortWithStatusJSON(err.StatusCode(), err.responseObject())
+	exp.SetTraceId(ginCtx.GetString("TRACE_ID"))
+	ginCtx.AbortWithStatusJSON(exp.StatusCode(), exp.responseObject())
 }
 
 func getValidationError(err error) string {

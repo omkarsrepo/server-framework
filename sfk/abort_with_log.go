@@ -8,7 +8,7 @@ import (
 	"github.com/omkarsrepo/server-framework/sfk/boom"
 )
 
-func logError(ginCtx *gin.Context, err boom.Exception) {
+func logError(ginCtx *gin.Context, err error) {
 	logger := LoggerServiceInstance()
 
 	req := ginCtx.Request
@@ -30,7 +30,7 @@ func logError(ginCtx *gin.Context, err boom.Exception) {
 		Msg(err.Error())
 }
 
-func Abort(ginCtx *gin.Context, err boom.Exception) {
+func Abort(ginCtx *gin.Context, err error) {
 	logError(ginCtx, err)
 
 	boom.Abort(ginCtx, err)
