@@ -5,7 +5,10 @@ package sfk
 import (
 	"context"
 	"errors"
+	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
+	"github.com/omkarsrepo/server-framework/sfk/boom"
+	"github.com/omkarsrepo/server-framework/sfk/json"
 	"github.com/omkarsrepo/server-framework/sfk/types"
 	"github.com/rs/zerolog"
 	"github.com/spf13/cobra"
@@ -38,6 +41,7 @@ type serverService struct {
 	skipRequestTimeoutMiddleware   bool
 	skipTraceHeaderMiddleware      bool
 	skipRequestLoggerMiddleware    bool
+	disablePprof                   bool
 }
 
 func NewServerService(name, description string, options *types.ServerOptions) ServerService {
@@ -49,7 +53,7 @@ func NewServerService(name, description string, options *types.ServerOptions) Se
 	commandsService := newCommandsService(cobraCmd)
 	commandsService.registerCommands()
 
-	routerInstance := RouterInstance(options.DisablePprof)
+	routerInstance := RouterInstance()
 	loggerInstance := LoggerServiceInstance()
 
 	return &serverService{
@@ -68,6 +72,7 @@ func NewServerService(name, description string, options *types.ServerOptions) Se
 		skipRequestTimeoutMiddleware:   options.SkipRequestTimeoutMiddleware,
 		skipTraceHeaderMiddleware:      options.SkipTraceHeaderMiddleware,
 		skipRequestLoggerMiddleware:    options.SkipRequestLoggerMiddleware,
+		disablePprof:                   options.DisablePprof,
 	}
 }
 
@@ -140,7 +145,38 @@ func (s *serverService) initializeServer(routes func(), database func()) {
 	}
 }
 
+func enablePprof(router *gin.Engine) {
+	secretService := SecretServiceInstance()
+
+	pprofEndpoint := router.Group("/metrics", func(ginCtx *gin.Context) {
+		authToken, exp := json.ExtractAuthorization(ginCtx)
+		if exp != nil {
+			Abort(ginCtx, exp)
+			return
+		}
+
+		val, exp := secretService.ValueOf("pprofSecret")
+		if exp != nil {
+			Abort(ginCtx, exp)
+			return
+		}
+
+		if authToken != val {
+			Abort(ginCtx, boom.Unauthorized("Invalid authToken for authorization header"))
+			return
+		}
+
+		ginCtx.Next()
+	})
+
+	pprof.RouteRegister(pprofEndpoint, "pprof")
+}
+
 func (s *serverService) startServer() {
+	if !s.disablePprof {
+		enablePprof(s.router)
+	}
+
 	port := s.config.GetString("port")
 	server := &http.Server{
 		Addr:    ":" + port,
