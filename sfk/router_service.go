@@ -57,7 +57,7 @@ func registerHealthPingEndpoint(router *gin.Engine) {
 	})
 }
 
-func getRouter() *gin.Engine {
+func getRouter(disablePprof bool) *gin.Engine {
 	config := ConfigServiceInstance()
 	router := gin.Default()
 
@@ -68,15 +68,18 @@ func getRouter() *gin.Engine {
 	}
 
 	registerHealthPingEndpoint(router)
-	enablePprof(router)
+
+	if !disablePprof {
+		enablePprof(router)
+	}
 
 	return router
 }
 
-func RouterInstance() RouterService {
+func RouterInstance(disablePprof bool) RouterService {
 	routerServiceOnce.Do(func() {
 		routerServiceInstance = &routerService{
-			Engine: getRouter(),
+			Engine: getRouter(disablePprof),
 		}
 	})
 

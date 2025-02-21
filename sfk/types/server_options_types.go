@@ -16,4 +16,5 @@ type ServerOptions struct {
 	SkipRequestTimeoutMiddleware   bool
 	SkipTraceHeaderMiddleware      bool
 	SkipRequestLoggerMiddleware    bool
+	DisablePprof                   bool
 }

@@ -49,7 +49,7 @@ func NewServerService(name, description string, options *types.ServerOptions) Se
 	commandsService := newCommandsService(cobraCmd)
 	commandsService.registerCommands()
 
-	routerInstance := RouterInstance()
+	routerInstance := RouterInstance(options.DisablePprof)
 	loggerInstance := LoggerServiceInstance()
 
 	return &serverService{
