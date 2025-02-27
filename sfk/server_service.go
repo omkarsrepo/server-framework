@@ -129,6 +129,10 @@ func (s *serverService) initializeServer(routes func(), database func()) {
 		overrideCorsMiddleware:         s.shouldOverrideCors,
 		disableGzipCompression:         s.disableGzipCompression,
 		excludePathsForGzipCompression: s.excludePathsForGzipCompression,
+		skipRateLimiterMiddleware:      s.skipRateLimiterMiddleware,
+		skipRequestTimeoutMiddleware:   s.skipRequestTimeoutMiddleware,
+		skipTraceHeaderMiddleware:      s.skipTraceHeaderMiddleware,
+		skipRequestLoggerMiddleware:    s.skipRequestLoggerMiddleware,
 	})
 
 	middlewareService.registerMiddlewares(s.middlewares...)
