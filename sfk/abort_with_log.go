@@ -12,7 +12,6 @@ func logError(ginCtx *gin.Context, err error) {
 	logger := LoggerServiceInstance()
 
 	req := ginCtx.Request
-	cleanBody := cleanRequestBody(req.Body, ginCtx)
 	cleanHeaders := cleanRequestHeaders(req.Header.Clone())
 
 	logger.Error(ginCtx).
@@ -22,7 +21,7 @@ func logError(ginCtx *gin.Context, err error) {
 		Any("requestRemoteAddress", req.RemoteAddr).
 		Any("requestClientIp", ginCtx.ClientIP()).
 		Any("requestQuery", req.URL.Query()).
-		Any("requestBody", cleanBody).
+		Str("requestBody", ginCtx.GetString("STRING_REQ_BODY")).
 		Any("requestHeaders", cleanHeaders).
 		Any("requestContentLength", req.ContentLength).
 		Str("received", fmt.Sprintf("%s https://%s%s", req.Method, req.Host, req.RequestURI)).

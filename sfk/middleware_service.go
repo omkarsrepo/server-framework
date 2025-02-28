@@ -68,5 +68,7 @@ func (m *middlewareService) registerMiddlewares(middlewares ...gin.HandlerFunc) 
 		m.router.Use(gzip.Gzip(gzip.DefaultCompression, gzip.WithExcludedExtensions(m.options.excludePathsForGzipCompression)))
 	}
 
+	m.router.Use(applyStringReqBody())
+
 	m.router.Use(middlewares...)
 }
