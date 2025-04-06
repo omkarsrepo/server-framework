@@ -12,8 +12,8 @@ import (
 var (
 	cacheServiceInstance *cacheService
 	cacheServiceOnce     sync.Once
-	cacheMapsMtx         sync.Mutex
-	variableCacheMapsMtx sync.Mutex
+	cacheMapsMtx         sync.RWMutex
+	variableCacheMapsMtx sync.RWMutex
 )
 
 type CacheService interface {
@@ -76,15 +76,15 @@ func (c *cacheService) NewVariable(capacity int) otter.CacheWithVariableTTL[stri
 }
 
 func (c *cacheService) Close() {
-	cacheMapsMtx.Lock()
-	defer cacheMapsMtx.Unlock()
+	cacheMapsMtx.RLock()
+	defer cacheMapsMtx.RUnlock()
 
 	lo.ForEach(c.cacheMaps, func(cache otter.Cache[string, any], _ int) {
 		cache.Close()
 	})
 
-	variableCacheMapsMtx.Lock()
-	defer variableCacheMapsMtx.Unlock()
+	variableCacheMapsMtx.RLock()
+	defer variableCacheMapsMtx.RUnlock()
 
 	lo.ForEach(c.variableCacheMaps, func(cache otter.CacheWithVariableTTL[string, any], _ int) {
 		cache.Close()

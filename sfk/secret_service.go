@@ -36,7 +36,6 @@ type secretService struct {
 	restyClient      *resty.Client
 	config           ConfigService
 	logger           *zerolog.Logger
-	variableCacheMtx sync.Mutex
 }
 
 func SecretServiceInstance() SecretService {
@@ -64,23 +63,14 @@ func SecretServiceInstance() SecretService {
 }
 
 func (s *secretService) setVariableCache(name string, secret any) {
-	s.variableCacheMtx.Lock()
-	defer s.variableCacheMtx.Unlock()
-
-	s.secretCache.Set(name, secret, time.Hour*6)
+	s.secretCache.Set(name, secret, time.Hour*2)
 }
 
 func (s *secretService) variableCache(name string) (any, bool) {
-	s.variableCacheMtx.Lock()
-	defer s.variableCacheMtx.Unlock()
-
 	return s.secretCache.Get(name)
 }
 
 func (s *secretService) deleteVariableCache(name string) {
-	s.variableCacheMtx.Lock()
-	defer s.variableCacheMtx.Unlock()
-
 	s.secretCache.Delete(name)
 }
 
@@ -181,9 +171,6 @@ func (s *secretService) ValueOf(secretKey string) (string, boom.Exception) {
 }
 
 func (s *secretService) PurgeSecretsCache() {
-	s.variableCacheMtx.Lock()
-	defer s.variableCacheMtx.Unlock()
-
 	s.secretCache.Clear()
 }
 
